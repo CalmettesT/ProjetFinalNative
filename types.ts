@@ -4,6 +4,7 @@ export interface Questionnaire {
   title: string;
   description: string;
   image: string;
+  completed: boolean; 
   createdAt: Date;
 }
 

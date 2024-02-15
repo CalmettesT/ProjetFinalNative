@@ -16,21 +16,29 @@ const firestore = getFirestore();
 
 
 
-export const fetchQuestionnairesFromFirestore = async (): Promise<
-  Questionnaire[]
-> => {
+export const fetchQuestionnairesFromFirestore = async (): Promise<Questionnaire[]> => {
   const q = query(
     collection(firestore, 'questionnaires'),
     orderBy('createdAt', 'desc'),
   );
   const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    title: doc.data().title,
-    description: doc.data().description,
-    image: doc.data().image,
-    createdAt: doc.data().createdAt.toDate(),
-  }));
+  const completedQuestionnaires = await getCompletedQuestionnaires(); // This should be a call to fetch completed questionnaires from your database
+  
+  return querySnapshot.docs.map(doc => {
+    // Check if the current questionnaire is completed by checking if it exists in the completedQuestionnaires array
+    const isCompleted = completedQuestionnaires.some(
+      (completedQuestionnaire) => completedQuestionnaire.title === doc.data().title
+    );
+
+    return {
+      id: doc.id,
+      title: doc.data().title,
+      description: doc.data().description,
+      image: doc.data().image,
+      createdAt: doc.data().createdAt.toDate(),
+      completed: isCompleted,
+    };
+  });
 };
 
 export const fetchQuestionsFromFirestore = async (questionnaireId: string): Promise<{ questions: Question[], title: string }> => {
@@ -57,41 +65,23 @@ export const fetchQuestionsFromFirestore = async (questionnaireId: string): Prom
 export const getCompletedQuestionnaires = async (): Promise<CompletedQuestionnaire[]> => {
   const user = auth.currentUser;
   if (!user) return [];
-
   const completedQuestionnairesRef = collection(firestore, 'completedQuestionnaires');
   const q = query(completedQuestionnairesRef, where('userId', '==', user.uid));
   const querySnapshot = await getDocs(q);
-
   const completedQuestionnairesData = await Promise.all(
     querySnapshot.docs.map(async (docSnapshot) => {
       const data = docSnapshot.data();
-      const questionnaireRef = doc(firestore, 'questionnaires', data.questionnaireId);
-      const questionnaireSnap = await getDoc(questionnaireRef);
-
-      if (!questionnaireSnap.exists()) {
-        console.error("Document de questionnaire introuvable pour l'ID:", data.questionnaireId);
-        return {
-          id: docSnapshot.id,
-          userId: data.userId,
-          reponses: data.reponses,
-          conseil: data.conseil,
-          title: "Titre inconnu",
-        };
-      }
-
       return {
         id: docSnapshot.id,
         userId: data.userId,
         reponses: data.reponses,
         conseil: data.conseil,
-        title: questionnaireSnap.data().title,
+        title: data.title,
       };
     })
   );
-
   return completedQuestionnairesData;
 };
-
 
 
 export const submitQuestionnaireResponses = async (questionnaireId: string, reponses: string[], title: string) => {
