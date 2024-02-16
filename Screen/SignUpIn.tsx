@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet } from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { registerUser, loginUser } from '../database/Auth';
 
 const SignUpIn = () => {
@@ -21,18 +21,18 @@ const SignUpIn = () => {
         onChangeText={setPassword}
         secureTextEntry
       />
-      <View style={styles.buttonContainer}>
-        <Button
-          title="Inscription"
-          onPress={() => registerUser(email, password)}
-        />
-      </View>
-      <View style={styles.buttonContainer}>
-        <Button
-          title="Connexion"
-          onPress={() => loginUser(email, password)}
-        />
-      </View>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => registerUser(email, password)}
+      >
+        <Text style={styles.buttonText}>Inscription</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => loginUser(email, password)}
+      >
+        <Text style={styles.buttonText}>Connexion</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -47,14 +47,29 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     height: 40,
-    borderColor: 'gray',
     borderWidth: 1,
     marginBottom: 10,
     paddingHorizontal: 10,
+    backgroundColor: '#fff',
+    color: '#000',
+  },
+  button: {
+    marginTop: 10,
+    width: '100%',
+    backgroundColor: '#C69C72', 
+    padding: 5,
+    borderRadius: 5,
+    alignItems: 'center',
   },
   buttonContainer: {
     marginTop: 10,
     width: '100%',
+  },
+
+  buttonText: {
+    color: '#fff',
+    textAlign: 'center',
+    padding: 5,
   },
 });
 

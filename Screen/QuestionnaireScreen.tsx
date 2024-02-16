@@ -7,30 +7,30 @@ import { useNavigation } from '@react-navigation/native';
 import { Question, Questionnaire } from '../types';
 import { QuestionnaireScreenRouteProp, HomeScreenNavigationProp } from '../navigationTypes';
 
-const storage = new MMKV();
+const storage = new MMKV(); // Instance de MMKV pour le stockage local
 
 interface QuestionnaireScreenProps {
-  route: QuestionnaireScreenRouteProp;
+  route: QuestionnaireScreenRouteProp; // Propriétés de la route pour accéder aux paramètres passés à l'écran
 }
 
 const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ route }) => {
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [title, setTitle] = useState('');
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState<string[]>([]);
-  const { questionnaireId } = route.params;
-  const navigation = useNavigation<HomeScreenNavigationProp>();
+  const [questions, setQuestions] = useState<Question[]>([]); // État pour stocker les questions du questionnaire
+  const [title, setTitle] = useState(''); // État pour stocker le titre du questionnaire
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // Index de la question actuelle
+  const [selectedAnswers, setSelectedAnswers] = useState<string[]>([]); // Réponses sélectionnées par l'utilisateur
+  const { questionnaireId } = route.params; // ID du questionnaire passé en paramètre
+  const navigation = useNavigation<HomeScreenNavigationProp>(); // Hook pour la navigation
 
   useEffect(() => {
     const loadQuestions = async () => {
       try {
-        const result = await fetchQuestionsFromFirestore(questionnaireId);
-        setQuestions(result.questions);
-        setTitle(result.title);
-        console.log('Questions loaded:', result.questions);
-        console.log('Title loaded:', result.title);
+        const result = await fetchQuestionsFromFirestore(questionnaireId); // Charge les questions depuis Firestore
+        setQuestions(result.questions); // Met à jour l'état avec les questions chargées
+        setTitle(result.title); // Met à jour le titre du questionnaire
+        console.log('Questions loaded:', result.questions); // Log pour déboguer
+        console.log('Title loaded:', result.title); // Log pour déboguer
       } catch (error) {
-        console.error('Error loading questions:', error);
+        console.error('Error loading questions:', error); // Log en cas d'erreur
       }
     };
 
@@ -38,36 +38,36 @@ const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ route }) => {
   }, [questionnaireId]);
 
   const handleReponseSelect = async (reponse: string) => {
-    const newAnswers = [...selectedAnswers, reponse];
-    setSelectedAnswers(newAnswers);
-    storage.set('selectedAnswers', JSON.stringify(newAnswers));
+    const newAnswers = [...selectedAnswers, reponse]; // Ajoute la réponse sélectionnée aux réponses existantes
+    setSelectedAnswers(newAnswers); // Met à jour l'état avec les nouvelles réponses
+    storage.set('selectedAnswers', JSON.stringify(newAnswers)); // Stocke les réponses localement
   
     if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setCurrentQuestionIndex(currentQuestionIndex + 1); // Passe à la question suivante si ce n'est pas la dernière
     } else {
-      const state = await NetInfo.fetch();
+      const state = await NetInfo.fetch(); // Vérifie la connectivité internet
       if (state.isConnected) {
-        handleSubmit(newAnswers, title);
+        handleSubmit(newAnswers, title); // Soumet les réponses si connecté à internet
       } else {
-        Alert.alert('Pas de connexion', 'Vous devez être connecté à internet pour soumettre vos réponses.');
+        Alert.alert('Pas de connexion', 'Vous devez être connecté à internet pour soumettre vos réponses.'); // Alert si pas de connexion
       }
     }
   };
 
   const handleSubmit = async (answers: string[], questionnaireTitle: string) => {
     try {
-      await submitQuestionnaireResponses(questionnaireId, answers, questionnaireTitle );
+      await submitQuestionnaireResponses(questionnaireId, answers, questionnaireTitle); // Soumet les réponses à Firestore
       Alert.alert('Succès', 'Vos réponses ont été soumises.', [
-        { text: 'OK', onPress: () => navigation.navigate('Home') },
+        { text: 'OK', onPress: () => navigation.navigate('Home') }, // Redirige vers l'accueil après soumission
       ]);
-      storage.delete('selectedAnswers');
+      storage.delete('selectedAnswers'); // Efface les réponses stockées localement
     } catch (error) {
-      console.error('Erreur de soumission des réponses :', error);
-      Alert.alert('Erreur', 'Un problème est survenu lors de la soumission de vos réponses.');
+      console.error('Erreur de soumission des réponses :', error); // Log en cas d'erreur de soumission
+      Alert.alert('Erreur', 'Un problème est survenu lors de la soumission de vos réponses.'); // Alert en cas d'erreur de soumission
     }
   };
 
-  const question = questions[currentQuestionIndex];
+  const question = questions[currentQuestionIndex]; // Question actuelle basée sur l'index
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   reponseButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#C69C72',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,

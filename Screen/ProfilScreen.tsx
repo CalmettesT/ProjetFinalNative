@@ -1,10 +1,9 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useCallback} from 'react';
 import {
   View,
   TouchableOpacity,
   Text,
   StyleSheet,
-  Button,
   ScrollView,
 } from 'react-native';
 import {logoutUser} from '../database/Auth';
@@ -76,11 +75,14 @@ const genererConseilGlobalParQuestionnaire = (titreQuestionnaire: string, repons
 export default function ProfilScreen() {
   const [completedQuestionnaires, setCompletedQuestionnaires] = useState<CompletedQuestionnaire[]>([]);
 
+  // Fonction asynchrone pour charger les questionnaires complétés depuis la base de données.
   const loadCompletedQuestionnaires = async () => {
     try {
+      // Appel à la fonction pour obtenir les questionnaires complétés.
       const data = await getCompletedQuestionnaires();
       console.log("Data before setting state:", data);
       if (data.length > 0) {
+        //Géneration des conseils en fonction des réponse
         const dataWithConseils = data.map((questionnaire) => ({
           ...questionnaire,
           conseil: genererConseilGlobalParQuestionnaire(questionnaire.title, questionnaire.reponses),
@@ -95,6 +97,7 @@ export default function ProfilScreen() {
     }
   };
   
+    // Hook personnalisé de React Navigation pour exécuter la fonction de chargement lorsque l'écran est focalisé.
   useFocusEffect(
     useCallback(() => {
       loadCompletedQuestionnaires();
@@ -103,7 +106,13 @@ export default function ProfilScreen() {
   
   console.log("Completed questionnaires in state:", completedQuestionnaires);
   if (completedQuestionnaires.length === 0) {
-    return <Text>Chargement...</Text>;
+    return (
+      <View style={styles.centeredView}>
+        <Text style={styles.centeredText}>
+          Vous n'avez pas encore de réponse au questionnaire ou il est en cours de chargement...
+        </Text>
+      </View>
+    );
   } else { 
   return (
     <View style={styles.container}>
@@ -125,6 +134,16 @@ export default function ProfilScreen() {
 }
 
 const styles = StyleSheet.create({
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  centeredText: {
+    textAlign: 'center',
+    fontSize: 16,
+  },
   container: {
     flex: 1,
     padding: 10,
@@ -157,7 +176,7 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 20,
-    backgroundColor: '#007bff',
+    backgroundColor: '#C69C72',
     padding: 15,
     borderRadius: 5,
     alignItems: 'center',

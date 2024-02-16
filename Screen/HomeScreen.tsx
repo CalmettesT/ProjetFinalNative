@@ -1,34 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { getFirestore } from 'firebase/firestore';
 import { Questionnaire } from '../types';
+import { useFocusEffect } from '@react-navigation/native';
 import { HomeScreenNavigationProp } from '../navigationTypes';
 import { fetchQuestionnairesFromFirestore, getCompletedQuestionnaires } from '../database/FirestoreService';
-
 
 interface HomeScreenProps {
   navigation: HomeScreenNavigationProp;
 }
 
-// Utilisation de l'interface définie précédemment
 const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
-  const firestore = getFirestore();
 
-  useEffect(() => {
-    const loadQuestionnaires = async () => {
-      const fetchedQuestionnaires = await fetchQuestionnairesFromFirestore();
-      const completedQuestionnaires = await getCompletedQuestionnaires(); // Obtenez les questionnaires complétés
-      // Marquez les questionnaires comme complétés en ajoutant un champ `completed`
-      const updatedQuestionnaires = fetchedQuestionnaires.map(q => ({
-        ...q,
-        completed: completedQuestionnaires.some(cq => cq.title === q.title),
-      }));
-      setQuestionnaires(updatedQuestionnaires);
-    };
-  
-    loadQuestionnaires();
-  }, []);
+  const loadQuestionnaires = async () => {
+    const fetchedQuestionnaires = await fetchQuestionnairesFromFirestore();
+    const completedQuestionnaires = await getCompletedQuestionnaires();
+    const updatedQuestionnaires = fetchedQuestionnaires.map(q => ({
+      ...q,
+      completed: completedQuestionnaires.some(cq => cq.title === q.title),
+    }));
+    setQuestionnaires(updatedQuestionnaires);
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadQuestionnaires();
+    }, [])
+  );
 
   return (
     <FlatList
@@ -60,11 +58,11 @@ const styles = StyleSheet.create({
     margin: 10,
     borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#C69C72',
     elevation: 4,
   },
   cardCompleted: {
-    opacity: 0.5,
+    opacity: 0.6,
   },
   image: {
     width: '100%',
@@ -78,10 +76,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 5,
+    color: '#2F2F2F',
   },
   description: {
     fontSize: 14,
-    color: '#555555',
+    color: '#2F2F2F',
   },
 });
 
